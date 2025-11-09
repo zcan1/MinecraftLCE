@@ -41,6 +41,10 @@ that the listener receives final disconnect callbacks.[^conn-tick]
 ## Packet registration and metadata
 
 ### Packet identifiers
+`Packet::staticCtor()` registers every packet understood by the client, assigning stable numeric
+identifiers used on the wire. The naming convention encodes the direction (clientbound vs.
+serverbound) and the feature domain for each packet, and the resulting table is reproduced in
+`packet-ids.md` for quick lookup.[^packet-map]
 `EPacketType` enumerates every packet understood by the client, assigning stable numeric identifiers
 used on the wire. The naming convention encodes the direction (clientbound vs. serverbound) and the
 feature domain for each packet.[^packet-type]
@@ -62,6 +66,143 @@ invalidations, or asynchronous handling are stubs that derived packet types over
 traffic. For each registered packet type there is a corresponding `handle…` method; the default
 implementation simply reports the packet as unhandled so concrete listeners can opt into specific
 messages. The interface also exposes disconnect notifications and a capability probe for asynchronous
+handling. The full callback matrix is inlined below so you never have to consult the header when
+tracking down a handler name.[^packet-listener]
+
+### Clientbound callbacks
+
+| Handler method | Packet class |
+| -------------- | ------------ |
+| `handleAcceptedLogin` | `ClientboundLoginPacket` |
+| `handleGetInfo` | `GetInfoPacket` |
+| `handleAddEntity` | `ClientboundAddEntityPacket` |
+| `handleAddExperienceOrb` | `ClientboundAddExperienceOrbPacket` |
+| `handleAddGlobalEntity` | `ClientboundAddGlobalEntityPacket` |
+| `handleAddMob` | `ClientboundAddMobPacket` |
+| `handleAddPainting` | `ClientboundAddPaintingPacket` |
+| `handleAddPlayer` | `ClientboundAddPlayerPacket` |
+| `handleAnimate` | `ClientboundAnimatePacket` |
+| `handleAwardStat` | `ClientboundAwardStatPacket` |
+| `handleBlockDestruction` | `ClientboundBlockDestructionPacket` |
+| `handleBlockCollectionDestruction` | `ClientboundBlockCollectionDestructionPacket` |
+| `handleOpenSignEditor` | `ClientboundOpenSignEditorPacket` |
+| `handleBlockEntityData` | `ClientboundBlockEntityDataPacket` |
+| `handleBlockEvent` | `ClientboundBlockEventPacket` |
+| `handleBlockUpdate` | `ClientboundBlockUpdatePacket` |
+| `handleBlockRegionUpdate` | `BlockRegionUpdatePacket` |
+| `handleChat` | `ClientboundChatPacket` |
+| `handleChatAutoComplete` | `ClientboundChatAutoCompletePacket` |
+| `handleChunkBlocksUpdate` | `ClientboundChunkBlocksUpdatePacket` |
+| `handleChunkVisibility` | `ChunkVisibilityPacket` |
+| `handleChunkVisibilityArea` | `ChunkVisibilityAreaPacket` |
+| `handleMapItemData` | `ClientboundMapItemDataPacket` |
+| `handleContainerAck` | `ClientboundContainerAckPacket` |
+| `handleContainerClose` | `ClientboundContainerClosePacket` |
+| `handleContainerContent` | `ClientboundContainerSetContentPacket` |
+| `handleContainerOpen` | `ClientboundContainerOpenPacket` |
+| `handleContainerSetData` | `ClientboundContainerSetDataPacket` |
+| `handleContainerSetSlot` | `ClientboundContainerSetSlotPacket` |
+| `handleCustomPayload` | `ClientboundCustomPayloadPacket` |
+| `handleDisconnect` | `DisconnectPacket` |
+| `handleEntityActionAtPosition` | `ClientboundPlayerSleepPacket` |
+| `handleEntityEvent` | `ClientboundEntityEventPacket` |
+| `handleEntityLinkPacket` | `ClientboundSetEntityLinkPacket` |
+| `handleSetEntityPassengersPacket` | `ClientboundSetPassengersPacket` |
+| `handleExplosion` | `ClientboundExplodePacket` |
+| `handleGameEvent` | `ClientboundGameEventPacket` |
+| `handleKeepAlive` | `ClientboundKeepAlivePacket` |
+| `handleLevelEvent` | `ClientboundLevelEventPacket` |
+| `handleLogin` | `ClientboundLoginPacket` |
+| `handleMoveEntity` | `ClientboundMoveEntityPacket` |
+| `handleMoveEntitySmall` | `MoveEntityPacketSmall` |
+| `handleMovePlayer` | `ClientboundPlayerPositionPacket` |
+| `handleParticleEvent` | `ClientboundLevelParticlesPacket` |
+| `handlePlayerAbilities` | `ClientboundPlayerAbilitiesPacket` |
+| `handlePlayerInfo` | `PlayerInfoPacket` |
+| `handlePreLogin` | `ClientboundPreLoginPacket` |
+| `handleRemoveEntity` | `ClientboundRemoveEntitiesPacket` |
+| `handleRemoveMobEffect` | `ClientboundRemoveMobEffectPacket` |
+| `handleRespawn` | `ClientboundRespawnPacket` |
+| `handleRotateMob` | `ClientboundRotateHeadPacket` |
+| `handleSetCarriedItem` | `ClientboundSetCarriedItemPacket` |
+| `handleSetEntityData` | `ClientboundSetEntityDataPacket` |
+| `handleSetEntityMotion` | `ClientboundSetEntityMotionPacket` |
+| `handleSetEquippedItem` | `ClientboundSetEquippedItemPacket` |
+| `handleSetExperience` | `ClientboundSetExperiencePacket` |
+| `handleSetHealth` | `ClientboundSetHealthPacket` |
+| `handleSetPlayerTeamPacket` | `ClientboundSetPlayerTeamPacket` |
+| `handleSetSpawn` | `ClientboundSetSpawnPositionPacket` |
+| `handleSetTime` | `ClientboundSetTimePacket` |
+| `handleSoundEvent` | `ClientboundSoundPacket` |
+| `handleTakeItemEntity` | `ClientboundTakeItemEntityPacket` |
+| `handleTeleportEntity` | `ClientboundTeleportEntityPacket` |
+| `handleUpdateAttributes` | `ClientboundUpdateAttributesPacket` |
+| `handleUpdateMobEffect` | `ClientboundUpdateMobEffectPacket` |
+| `handlePlayerCombat` | `ClientboundPlayerCombatPacket` |
+| `handleChangeDifficulty` | `ClientboundChangeDifficultyPacket` |
+| `handleSetCamera` | `ClientboundSetCameraPacket` |
+| `handleSetBorder` | `ClientboundSetBorderPacket` |
+| `handleSetTitles` | `ClientboundSetTitlesPacket` |
+| `handleTabListCustomisation` | `ClientboundTabListPacket` |
+| `handleResourcePack` | `ClientboundResourcePackPacket` |
+| `handleBossUpdate` | `ClientboundBossEventPacket` |
+| `handleItemCooldown` | `ClientboundCooldownPacket` |
+| `handleMoveVehicle` | `ClientboundMoveVehiclePacket` |
+| `handleServerSettingsChanged` | `ServerSettingsChangedPacket` |
+| `handleTexture` | `TexturePacket` |
+| `handleTextureAndGeometry` | `TextureAndGeometryPacket` |
+| `handleUpdateProgress` | `UpdateProgressPacket` |
+| `handleTextureChange` | `TextureChangePacket` |
+| `handleTextureAndGeometryChange` | `TextureAndGeometryChangePacket` |
+| `handleUpdateGameRuleProgressPacket` | `UpdateGameRuleProgressPacket` |
+| `handleXZ` | `XZPacket` |
+| `handleScoreboardPacket` | `ScoreboardPacket` |
+| `handleGameMode` | `GameModePacket` |
+| `handleMapSelectInfo` | `MapSelectInfoPacket` |
+| `handlePlayerReady` | `PlayerReadyPacket` |
+| `handlePowerup` | `ClientboundPowerupPacket` |
+| `handleDamageIndicator` | `ClientboundDamageIndicatorPacket` |
+| `handleMiniGamePlayerSettingsUpdatePacket` | `ClientboundMGPlayerSettingsUpdatePacket` |
+
+### Serverbound callbacks
+
+| Handler method | Packet class |
+| -------------- | ------------ |
+| `handleAnimate` | `ServerboundSwingPacket` |
+| `handleChat` | `ServerboundChatPacket` |
+| `handleChatAutoComplete` | `ServerboundChatAutoCompletePacket` |
+| `handleClientCommand` | `ServerboundClientCommandPacket` |
+| `handleClientInformation` | `ServerboundClientInformationPacket` |
+| `handleContainerAck` | `ServerboundContainerAckPacket` |
+| `handleContainerButtonClick` | `ServerboundContainerButtonClickPacket` |
+| `handleContainerClick` | `ServerboundContainerClickPacket` |
+| `handleContainerClose` | `ServerboundContainerClosePacket` |
+| `handleCustomPayload` | `ServerboundCustomPayloadPacket` |
+| `handleInteract` | `ServerboundInteractPacket` |
+| `handleKeepAlive` | `ServerboundKeepAlivePacket` |
+| `handleMovePlayer` | `ServerboundMovePlayerPacket` |
+| `handlePlayerAbilities` | `ServerboundPlayerAbilitiesPacket` |
+| `handlePlayerAction` | `ServerboundPlayerActionPacket` |
+| `handlePlayerCommand` | `ServerboundPlayerCommandPacket` |
+| `handlePlayerInput` | `ServerboundPlayerInputPacket` |
+| `handlePreLogin` | `ServerboundPreLoginPacket` |
+| `handleSetCarriedItem` | `ServerboundSetCarriedItemPacket` |
+| `handleSetCreativeModeSlot` | `ServerboundSetCreativeModeSlotPacket` |
+| `handleSignUpdate` | `ServerboundSignUpdatePacket` |
+| `handleUseItemOn` | `ServerboundUseItemOnPacket` |
+| `handleUseItem` | `ServerboundUseItemPacket` |
+| `handleTeleportToEntityPacket` | `ServerboundTeleportToEntityPacket` |
+| `handleResourcePackResponse` | `ServerboundResourcePackPacket` |
+| `handlePaddleBoat` | `ServerboundPaddleBoatPacket` |
+| `handleMoveVehicle` | `ServerboundMoveVehiclePacket` |
+| `handleAcceptTeleportPacket` | `ServerboundAcceptTeleportationPacket` |
+| `handleCraftItem` | `CraftItemPacket` |
+| `handleTradeItem` | `TradeItemPacket` |
+| `handleDebugOptions` | `DebugOptionsPacket` |
+| `handleKickPlayer` | `KickPlayerPacket` |
+| `handleGameCommand` | `GameCommandPacket` |
+| `handleVote` | `VotePacket` |
+| `handleClientboundSetPlayerTeamPacket` | `ClientboundSetPlayerTeamPacket` |
 handling.[^packet-listener]
 
 ## Further reading

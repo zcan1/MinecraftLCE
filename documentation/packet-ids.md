@@ -1,5 +1,8 @@
 # Packet ID Catalogue
 
+The table below enumerates every packet identifier the Legacy Console Edition client registers at
+startup. The numeric IDs mirror the wiring performed inside `Packet::staticCtor()`, ensuring the
+documentation matches the runtime mapping without requiring a trip into the engine headers.[^packet-map]
 The table below enumerates every packet identifier defined in `EPacketType`. Each row links the
 numeric ID used on the wire to the generated packet class and its general responsibility. Refer to
 the corresponding header in `src/Minecraft.Client/net/minecraft/network/protocol/game/` for the
@@ -131,4 +134,28 @@ full payload layout.[^packet-type]
 | 254 | `_GetInfoPacket` | `GetInfoPacket` | Client → Server | Exchanges host or lobby metadata. |
 | 255 | `_DisconnectPacket` | `DisconnectPacket` | Server → Client | Performs an orderly disconnect with reason codes. |
 
+## Documented payload layouts
+
+Only a handful of packets currently expose concrete field layouts in the decompiled sources. The
+member variables below are surfaced directly by the packet classes so you can quickly determine the
+payload shape without digging through `.h` files.
+
+### `ServerboundMovePlayerPacket` family
+
+Base packet fields:
+
+* `double mX`, `mY`, `mZ` — most recent absolute world position supplied by the client.
+* `float mYRot`, `mXRot` — yaw and pitch angles in degrees.
+* `bool onGround` — whether the client reports standing on solid ground.
+* `bool hasPos`, `hasRot` — indicate which portions of the payload are present on the wire.
+* `bool bool3B` — unnamed flag preserved from the retail binary; forwarded unchanged to the
+  listener.
+
+All three nested variants inherit from the base class and only tweak the encode/decode path:
+
+* `ServerboundMovePlayerPacket::Pos` — sends only position fields (`hasPos = true`, `hasRot = false`).
+* `ServerboundMovePlayerPacket::Rot` — sends only rotation fields (`hasPos = false`, `hasRot = true`).
+* `ServerboundMovePlayerPacket::PosRot` — sends both position and rotation fields.
+
+[^packet-map]: `src/Minecraft.Client/net/minecraft/network/protocol/Packet.cpp`, lines 176-374.
 [^packet-type]: `src/Minecraft.Client/net/minecraft/network/PacketType.h`, lines 3-127.
