@@ -3,6 +3,10 @@
 The table below enumerates every packet identifier the Legacy Console Edition client registers at
 startup. The numeric IDs mirror the wiring performed inside `Packet::staticCtor()`, ensuring the
 documentation matches the runtime mapping without requiring a trip into the engine headers.[^packet-map]
+The table below enumerates every packet identifier defined in `EPacketType`. Each row links the
+numeric ID used on the wire to the generated packet class and its general responsibility. Refer to
+the corresponding header in `src/Minecraft.Client/net/minecraft/network/protocol/game/` for the
+full payload layout.[^packet-type]
 
 | ID | Enum label | Packet class | Direction | Notes |
 | --- | --- | --- | --- | --- |
@@ -154,3 +158,4 @@ All three nested variants inherit from the base class and only tweak the encode/
 * `ServerboundMovePlayerPacket::PosRot` — sends both position and rotation fields.
 
 [^packet-map]: `src/Minecraft.Client/net/minecraft/network/protocol/Packet.cpp`, lines 176-374.
+[^packet-type]: `src/Minecraft.Client/net/minecraft/network/PacketType.h`, lines 3-127.

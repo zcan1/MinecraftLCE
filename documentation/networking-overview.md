@@ -45,6 +45,9 @@ that the listener receives final disconnect callbacks.[^conn-tick]
 identifiers used on the wire. The naming convention encodes the direction (clientbound vs.
 serverbound) and the feature domain for each packet, and the resulting table is reproduced in
 `packet-ids.md` for quick lookup.[^packet-map]
+`EPacketType` enumerates every packet understood by the client, assigning stable numeric identifiers
+used on the wire. The naming convention encodes the direction (clientbound vs. serverbound) and the
+feature domain for each packet.[^packet-type]
 
 ### Factory registration
 `Packet::staticCtor()` registers every known packet class with a creation factory and a set of metadata
@@ -200,6 +203,7 @@ tracking down a handler name.[^packet-listener]
 | `handleGameCommand` | `GameCommandPacket` |
 | `handleVote` | `VotePacket` |
 | `handleClientboundSetPlayerTeamPacket` | `ClientboundSetPlayerTeamPacket` |
+handling.[^packet-listener]
 
 ## Further reading
 
@@ -212,6 +216,7 @@ tracking down a handler name.[^packet-listener]
 [^conn-write]: `src/Minecraft.Client/net/minecraft/network/Connection.cpp`, lines 242-298.
 [^conn-read]: `src/Minecraft.Client/net/minecraft/network/Connection.cpp`, lines 305-320.
 [^conn-tick]: `src/Minecraft.Client/net/minecraft/network/Connection.cpp`, lines 357-439.
+[^packet-type]: `src/Minecraft.Client/net/minecraft/network/PacketType.h`, lines 3-127.
 [^packet-map]: `src/Minecraft.Client/net/minecraft/network/protocol/Packet.cpp`, lines 176-374.
 [^packet-base]: `src/Minecraft.Client/net/minecraft/network/protocol/Packet.cpp`, lines 129-174.
 [^packet-listener]: `src/Minecraft.Client/net/minecraft/network/PacketListener.h`, lines 1-110.
